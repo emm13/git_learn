@@ -1,0 +1,23 @@
+name: Render .html from .rmd in repo as gh-pages
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Install rmarkdown
+        run: Rscript -e 'install.packages(c("rmarkdown", "prettydoc"))'
+      - name: Render html
+        run: Rscript -e 'rmarkdown::render("index.Rmd")'
+      - name: Push changes
+        run: |
+          git config user.name 'GitHub Actions'
+          git config user.email 'email@github.com'
+          git add index.html
+          git commit -m "Automatic render"
+          git push origin HEAD:${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
